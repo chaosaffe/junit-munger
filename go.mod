@@ -1,4 +1,4 @@
-module github.com/chaosaffe/junit-resruct
+module github.com/chaosaffe/junit-munger
 
 go 1.19
 
