@@ -118,6 +118,7 @@ func getSuitesFromJUnitXML(path string) []junit.Suite {
 		log.Fatalf("failed to match jUnit filename pattern: %v", err)
 	}
 	for _, junitFilename := range filenames {
+		log.Printf("loading file %s\n", junitFilename)
 		f, err := os.Open(junitFilename)
 		if err != nil {
 			log.Fatalf("failed to open junit xml: %v\n", err)
