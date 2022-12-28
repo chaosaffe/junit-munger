@@ -138,8 +138,8 @@ func buildSuitesFromFiles(in []junit.Suite) []junit.Suite {
 
 	for _, suite := range in {
 		for _, test := range suite.Tests {
-			fn := test.Properties["file"]
-			temp[fn] = append(temp[fn], test)
+			fileName := test.Properties["file"]
+			temp[fileName] = append(temp[fileName], test)
 		}
 	}
 
