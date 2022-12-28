@@ -67,12 +67,12 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 
 	var suiteDuration time.Duration
 
-	for _, in := range in.Tests {
+	for _, test := range in.Tests {
 		tc := report.Testcase{
-			Name:      in.Name,
-			Classname: in.Classname,
-			Time:      fmt.Sprintf("%.6f", in.Duration.Seconds()),
-			Status:    string(in.Status),
+			Name:      test.Name,
+			Classname: test.Classname,
+			Time:      fmt.Sprintf("%.6f", test.Duration.Seconds()),
+			Status:    string(test.Status),
 		}
 
 		suiteDuration += test.Duration
