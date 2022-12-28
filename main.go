@@ -65,7 +65,7 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 		out.AddProperty(k, v)
 	}
 
-	var duration time.Duration
+	var suiteDuration time.Duration
 
 	for _, in := range in.Tests {
 		tc := report.Testcase{
@@ -75,7 +75,7 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 			Status:    string(in.Status),
 		}
 
-		duration += in.Duration
+		suiteDuration += test.Duration
 		out.AddTestcase(tc)
 	}
 
@@ -91,7 +91,7 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 		return a > b
 	})
 
-	out.Time = fmt.Sprintf("%.6f", duration.Seconds())
+	out.Time = fmt.Sprintf("%.6f", suiteDuration.Seconds())
 
 	return out
 }
