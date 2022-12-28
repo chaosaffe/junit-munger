@@ -75,6 +75,32 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 			Status:    string(test.Status),
 		}
 
+		if test.Status == junit.StatusError || test.Status == junit.StatusFailed {
+			// append fail or error data
+			junitError, ok := test.Error.(junit.Error)
+			if !ok {
+				panic("failed to typecase interface to junit.Error")
+			}
+
+			result := &report.Result{
+				Message: junitError.Message,
+				Type:    junitError.Type,
+				Data:    junitError.Body,
+			}
+
+			switch test.Status {
+			case junit.StatusFailed:
+				tc.Failure = result
+			case junit.StatusError:
+				tc.Error = result
+			}
+
+		}
+
+		if test.Status == junit.StatusSkipped {
+			tc.Skipped = &report.Result{}
+		}
+
 		suiteDuration += test.Duration
 		out.AddTestcase(tc)
 	}
