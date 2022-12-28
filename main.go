@@ -65,17 +65,43 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 		out.AddProperty(k, v)
 	}
 
-	var duration time.Duration
+	var suiteDuration time.Duration
 
-	for _, in := range in.Tests {
+	for _, test := range in.Tests {
 		tc := report.Testcase{
-			Name:      in.Name,
-			Classname: in.Classname,
-			Time:      fmt.Sprintf("%.6f", in.Duration.Seconds()),
-			Status:    string(in.Status),
+			Name:      test.Name,
+			Classname: test.Classname,
+			Time:      fmt.Sprintf("%.6f", test.Duration.Seconds()),
+			Status:    string(test.Status),
 		}
 
-		duration += in.Duration
+		if test.Status == junit.StatusError || test.Status == junit.StatusFailed {
+			// append fail or error data
+			junitError, ok := test.Error.(junit.Error)
+			if !ok {
+				panic("failed to typecase interface to junit.Error")
+			}
+
+			result := &report.Result{
+				Message: junitError.Message,
+				Type:    junitError.Type,
+				Data:    junitError.Body,
+			}
+
+			switch test.Status {
+			case junit.StatusFailed:
+				tc.Failure = result
+			case junit.StatusError:
+				tc.Error = result
+			}
+
+		}
+
+		if test.Status == junit.StatusSkipped {
+			tc.Skipped = &report.Result{}
+		}
+
+		suiteDuration += test.Duration
 		out.AddTestcase(tc)
 	}
 
@@ -91,7 +117,7 @@ func buildSuite(in junit.Suite) (out report.Testsuite) {
 		return a > b
 	})
 
-	out.Time = fmt.Sprintf("%.6f", duration.Seconds())
+	out.Time = fmt.Sprintf("%.6f", suiteDuration.Seconds())
 
 	return out
 }
@@ -118,6 +144,7 @@ func getSuitesFromJUnitXML(path string) []junit.Suite {
 		log.Fatalf("failed to match jUnit filename pattern: %v", err)
 	}
 	for _, junitFilename := range filenames {
+		log.Printf("loading file %s\n", junitFilename)
 		f, err := os.Open(junitFilename)
 		if err != nil {
 			log.Fatalf("failed to open junit xml: %v\n", err)
@@ -137,8 +164,8 @@ func buildSuitesFromFiles(in []junit.Suite) []junit.Suite {
 
 	for _, suite := range in {
 		for _, test := range suite.Tests {
-			fn := test.Properties["file"]
-			temp[fn] = append(temp[fn], test)
+			fileName := test.Properties["file"]
+			temp[fileName] = append(temp[fileName], test)
 		}
 	}
 
